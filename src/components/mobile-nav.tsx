@@ -15,6 +15,8 @@ const links = [
 export function MobileNav() {
   const pathname = usePathname();
   const router = useRouter();
+
+  if (pathname === "/login") return null;
   const items: NavItem[] = [
     { id: "home", label: "Home", icon: <Home />, onClick: () => router.push("/dashboard") },
     { id: "calendar", label: "Calendar", icon: <CalendarDays />, onClick: () => router.push("/calendar") },
