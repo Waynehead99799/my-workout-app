@@ -16,25 +16,22 @@ export default async function DashboardPage() {
 
   await connectDb();
   const cycle = await WorkoutCycle.findOne({ userId: user.id, isActive: true }).lean();
-  const doneCount = cycle
-    ? await WorkoutSession.countDocuments({ userId: user.id, cycleId: cycle._id, isDone: true })
-    : 0;
-  const today = dayjs().format("YYYY-MM-DD");
 
+  let doneCount = 0;
   let todaysWorkoutKey = "";
+
   if (cycle) {
-    const todaysSession = await WorkoutSession.findOne({
-      userId: user.id,
-      cycleId: cycle._id,
-      sessionDate: today,
-    })
-      .select("dayKey")
-      .lean();
+    const today = dayjs().format("YYYY-MM-DD");
+    const [done, todaysSession, progress] = await Promise.all([
+      WorkoutSession.countDocuments({ userId: user.id, cycleId: cycle._id, isDone: true }),
+      WorkoutSession.findOne({ userId: user.id, cycleId: cycle._id, sessionDate: today }).select("dayKey").lean(),
+      WorkoutSession.countDocuments({ userId: user.id, cycleId: cycle._id }),
+    ]);
+    doneCount = done;
 
     if (todaysSession?.dayKey) {
       todaysWorkoutKey = todaysSession.dayKey;
     } else {
-      const progress = await WorkoutSession.countDocuments({ userId: user.id, cycleId: cycle._id });
       const nextTemplateDay = await resolveTemplateDayByProgress(progress);
       todaysWorkoutKey = nextTemplateDay?.dayKey ?? "";
     }

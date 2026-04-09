@@ -1,6 +1,7 @@
 "use client";
 
 import React, { cloneElement, useLayoutEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 const DefaultHomeIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -50,6 +51,7 @@ export type NavItem = {
   id: string | number;
   icon: React.ReactElement<{ className?: string }>;
   label?: string;
+  href?: string;
   onClick?: () => void;
   isPrimaryAction?: boolean;
 };
@@ -128,32 +130,50 @@ export const LimelightNav = ({
     <nav
       className={`relative inline-flex h-14 w-full items-center rounded-2xl bg-transparent px-1.5 text-foreground ${className}`}
     >
-      {items.map(({ id, icon, label, onClick, isPrimaryAction }, index) => (
-        <button
-          key={id}
-          ref={(el) => {
-            navItemRefs.current[index] = el;
-          }}
-          type="button"
-          className={`relative z-20 flex h-full flex-1 items-center justify-center px-2 ${iconContainerClassName}`}
-          onClick={() => handleItemClick(index, onClick)}
-          aria-label={label}
-        >
-          {isPrimaryAction ? (
-            <span className="flex h-11 w-11 shrink-0 -translate-y-2 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/35">
-              {cloneElement(icon, {
-                className: `h-7 w-7 shrink-0 opacity-100 ${icon.props.className ?? ""} ${iconClassName}`,
-              })}
-            </span>
-          ) : (
-            cloneElement(icon, {
-              className: `h-6 w-6 transition-all duration-200 ease-out ${
-                currentIndex === index ? "opacity-100" : "opacity-40"
-              } ${icon.props.className ?? ""} ${iconClassName}`,
-            })
-          )}
-        </button>
-      ))}
+      {items.map(({ id, icon, label, href, onClick, isPrimaryAction }, index) => {
+        const inner = isPrimaryAction ? (
+          <span className="flex h-11 w-11 shrink-0 -translate-y-2 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/35">
+            {cloneElement(icon, {
+              className: `h-7 w-7 shrink-0 opacity-100 ${icon.props.className ?? ""} ${iconClassName}`,
+            })}
+          </span>
+        ) : (
+          cloneElement(icon, {
+            className: `h-6 w-6 transition-all duration-200 ease-out ${
+              currentIndex === index ? "opacity-100" : "opacity-40"
+            } ${icon.props.className ?? ""} ${iconClassName}`,
+          })
+        );
+        const cls = `relative z-20 flex h-full flex-1 items-center justify-center px-2 ${iconContainerClassName}`;
+        return href ? (
+          <Link
+            key={id}
+            ref={(el: HTMLAnchorElement | null) => {
+              navItemRefs.current[index] = el as unknown as HTMLButtonElement;
+            }}
+            href={href}
+            prefetch={true}
+            className={cls}
+            onClick={() => handleItemClick(index, onClick)}
+            aria-label={label}
+          >
+            {inner}
+          </Link>
+        ) : (
+          <button
+            key={id}
+            ref={(el) => {
+              navItemRefs.current[index] = el;
+            }}
+            type="button"
+            className={cls}
+            onClick={() => handleItemClick(index, onClick)}
+            aria-label={label}
+          >
+            {inner}
+          </button>
+        );
+      })}
 
       <div
         ref={limelightRef}
