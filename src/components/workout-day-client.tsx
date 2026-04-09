@@ -1,7 +1,7 @@
 "use client";
 
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type Exercise = {
   _id: string;
@@ -278,24 +278,34 @@ function SetForm({
     setLastSavedKey(`${initialValues?.weight ?? ""}|${initialValues?.reps ?? ""}`);
   }, [initialValues?.weight, initialValues?.reps]);
 
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const doSave = useCallback(async () => {
+    const currentKey = `${weight}|${reps}`;
+    if (!weight.trim() || currentKey === lastSavedKey) return;
+    setSaving(true);
+    try {
+      await onSave({ weight, reps });
+      setLastSavedKey(currentKey);
+    } finally {
+      setSaving(false);
+    }
+  }, [weight, reps, lastSavedKey, onSave]);
+
+  // Long debounce as fallback — saves after user stops typing for 1.5s
   useEffect(() => {
     const currentKey = `${weight}|${reps}`;
-    if (!weight.trim() || currentKey === lastSavedKey) {
-      return;
-    }
+    if (!weight.trim() || currentKey === lastSavedKey) return;
 
-    const timer = setTimeout(async () => {
-      setSaving(true);
-      try {
-        await onSave({ weight, reps });
-        setLastSavedKey(currentKey);
-      } finally {
-        setSaving(false);
-      }
-    }, 450);
+    timerRef.current = setTimeout(doSave, 1500);
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [weight, reps, lastSavedKey, doSave]);
 
-    return () => clearTimeout(timer);
-  }, [weight, reps, lastSavedKey, onSave]);
+  // Save immediately on blur
+  const handleBlur = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    doSave();
+  };
 
   return (
     <div className="space-y-2 rounded-xl border border-zinc-200 bg-white p-3">
@@ -314,6 +324,7 @@ function SetForm({
           placeholder="Weight (kg)"
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
+          onBlur={handleBlur}
         />
         <input
           className="rounded-lg border border-zinc-200 px-2.5 py-2 text-xs outline-none focus:ring-2 focus:ring-zinc-200"
@@ -322,6 +333,7 @@ function SetForm({
           placeholder="Reps (optional)"
           value={reps}
           onChange={(e) => setReps(e.target.value)}
+          onBlur={handleBlur}
         />
       </div>
     </div>
