@@ -1,11 +1,7 @@
-const CACHE_NAME = "workout-tracker-v1";
-const APP_SHELL = [
+const CACHE_NAME = "workout-tracker-v2";
+const STATIC_ASSETS = [
   "/",
   "/login",
-  "/dashboard",
-  "/calendar",
-  "/settings",
-  "/progress/compare",
   "/manifest.webmanifest",
   "/icons/icon-192.svg",
   "/icons/icon-512.svg",
@@ -13,7 +9,7 @@ const APP_SHELL = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)).then(() => self.skipWaiting())
   );
 });
 
@@ -33,6 +29,30 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  const url = new URL(event.request.url);
+  const isSameOrigin = url.origin === self.location.origin;
+  const isApiRequest = isSameOrigin && url.pathname.startsWith("/api/");
+  const isNavigation = event.request.mode === "navigate";
+
+  // Never cache/intercept API calls.
+  if (isApiRequest) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // Keep HTML navigations network-first to avoid auth/session issues.
+  if (isNavigation) {
+    event.respondWith(fetch(event.request).catch(() => caches.match("/login")));
+    return;
+  }
+
+  const cacheableDestinations = new Set(["style", "script", "font", "image"]);
+  const shouldUseCache = isSameOrigin && cacheableDestinations.has(event.request.destination);
+
+  if (!shouldUseCache) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) {
@@ -49,7 +69,7 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));
           return response;
         })
-        .catch(() => caches.match("/dashboard"));
+        .catch(() => caches.match("/login"));
     })
   );
 });
