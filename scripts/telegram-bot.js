@@ -39,8 +39,45 @@ if (!TOKEN || !CHAT_ID) {
 
 console.log(`Using CHAT_ID: ${CHAT_ID}`);
 
+const TEMP_DIR = path.join(PROJECT_DIR, "tmp-telegram");
+if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR, { recursive: true });
+
 let offset = 0;
 let currentProcess = null;
+
+function downloadFile(filePath) {
+  return new Promise((resolve, reject) => {
+    https.get(`https://api.telegram.org/file/bot${TOKEN}/${filePath}`, (res) => {
+      const name = path.basename(filePath);
+      const dest = path.join(TEMP_DIR, name);
+      const ws = fs.createWriteStream(dest);
+      res.pipe(ws);
+      ws.on("finish", () => { ws.close(); resolve(dest); });
+      ws.on("error", reject);
+    }).on("error", reject);
+  });
+}
+
+async function getFileFromMessage(msg) {
+  let fileId = null;
+  let caption = msg.caption || "";
+
+  if (msg.photo) {
+    // Get highest resolution photo
+    fileId = msg.photo[msg.photo.length - 1].file_id;
+  } else if (msg.document) {
+    fileId = msg.document.file_id;
+    caption = caption || msg.document.file_name || "";
+  }
+
+  if (!fileId) return null;
+
+  const fileInfo = await apiCall("getFile", { file_id: fileId });
+  if (!fileInfo.ok) return null;
+
+  const localPath = await downloadFile(fileInfo.result.file_path);
+  return { localPath, caption };
+}
 
 function apiCall(method, params = {}) {
   return new Promise((resolve, reject) => {
@@ -75,7 +112,7 @@ function sendMessage(text) {
   });
 }
 
-function runClaude(prompt) {
+function runClaude(prompt, files = []) {
   if (currentProcess) {
     sendMessage("⚠️ Already running a task. Send /stop to cancel it first.");
     return;
@@ -87,6 +124,7 @@ function runClaude(prompt) {
   if (isNewSession) delete process.env.CLAUDE_NEW_SESSION;
   const claudeArgs = ["--print", "--dangerously-skip-permissions"];
   if (!isNewSession) claudeArgs.push("--continue");
+  for (const f of files) claudeArgs.push("--file", f);
   claudeArgs.push(`"${prompt.replace(/"/g, '\\"')}"`);
 
 
@@ -158,7 +196,7 @@ async function getUpdates() {
     for (const update of result.result) {
       offset = update.update_id + 1;
       const msg = update.message;
-      if (!msg || !msg.text) continue;
+      if (!msg) continue;
 
       // Only respond to your chat ID (security)
       if (String(msg.chat.id) !== String(CHAT_ID)) {
@@ -166,6 +204,19 @@ async function getUpdates() {
         continue;
       }
 
+      // Handle photos and documents
+      if (msg.photo || msg.document) {
+        const file = await getFileFromMessage(msg);
+        if (file) {
+          const prompt = file.caption || "Look at this file and tell me what you see. Fix any issues shown.";
+          runClaude(prompt, [file.localPath]);
+        } else {
+          sendMessage("❌ Could not download the file.");
+        }
+        continue;
+      }
+
+      if (!msg.text) continue;
       const text = msg.text.trim();
 
       if (text === "/stop") {
