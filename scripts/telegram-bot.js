@@ -80,9 +80,15 @@ function runClaude(prompt) {
 
   sendMessage(`🚀 *Starting task...*\n\`${prompt.slice(0, 200)}\``);
 
+  const isNewSession = process.env.CLAUDE_NEW_SESSION === "1";
+  if (isNewSession) delete process.env.CLAUDE_NEW_SESSION;
+  const claudeArgs = ["--print", "--dangerously-skip-permissions"];
+  if (!isNewSession) claudeArgs.push("--continue");
+  claudeArgs.push(prompt);
+
   const proc = spawn(
     "claude",
-    ["--print", "--continue", "--dangerously-skip-permissions", prompt],
+    claudeArgs,
     {
       cwd: PROJECT_DIR,
       shell: true,
