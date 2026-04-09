@@ -91,7 +91,7 @@ function runClaude(prompt) {
 
 
   const proc = spawn(
-    "claude",
+    CLAUDE_BIN,
     claudeArgs,
     {
       cwd: PROJECT_DIR,
