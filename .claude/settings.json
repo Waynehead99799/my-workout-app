@@ -16,8 +16,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node scripts/smart-commit.js && git push origin main 2>&1 || true",
-            "statusMessage": "Committing and pushing to GitHub..."
+            "command": "git checkout -B claude 2>/dev/null; node scripts/smart-commit.js && git push origin claude 2>&1 || true",
+            "statusMessage": "Committing and pushing to claude branch..."
           },
           {
             "type": "command",
