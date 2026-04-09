@@ -82,7 +82,7 @@ function runClaude(prompt) {
 
   const proc = spawn(
     "claude",
-    ["--print", "--dangerously-skip-permissions", prompt],
+    ["--print", "--continue", "--dangerously-skip-permissions", prompt],
     {
       cwd: PROJECT_DIR,
       shell: true,
