@@ -124,8 +124,13 @@ function runClaude(prompt, files = []) {
   if (isNewSession) delete process.env.CLAUDE_NEW_SESSION;
   const claudeArgs = ["--print", "--dangerously-skip-permissions"];
   if (!isNewSession) claudeArgs.push("--continue");
-  for (const f of files) claudeArgs.push("--file", f);
-  claudeArgs.push(`"${prompt.replace(/"/g, '\\"')}"`);
+  // Build prompt with file references for Claude to read via its Read tool
+  let fullPrompt = prompt;
+  if (files.length > 0) {
+    const filePaths = files.map((f) => f.replace(/\\/g, "/")).join(", ");
+    fullPrompt = `${prompt}\n\nThe user attached file(s) from Telegram. Read them using the Read tool: ${filePaths}`;
+  }
+  claudeArgs.push(`"${fullPrompt.replace(/"/g, '\\"')}"`);
 
 
   const proc = spawn(
