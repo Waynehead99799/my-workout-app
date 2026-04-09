@@ -27,20 +27,28 @@ export const { handlers, auth, signIn, signOut } = nextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const parsed = CredentialsSchema.safeParse(credentials);
-        if (!parsed.success) {
+        try {
+          const parsed = CredentialsSchema.safeParse(credentials);
+          if (!parsed.success) {
+            console.error("[auth] Invalid credentials format");
+            return null;
+          }
+          await connectDb();
+          const user = await User.findOne({ email: parsed.data.email.toLowerCase() });
+          if (!user) {
+            console.error("[auth] No user found for:", parsed.data.email);
+            return null;
+          }
+          const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
+          if (!valid) {
+            console.error("[auth] Invalid password for:", parsed.data.email);
+            return null;
+          }
+          return { id: user._id.toString(), name: user.name, email: user.email };
+        } catch (err) {
+          console.error("[auth] authorize error:", err);
           return null;
         }
-        await connectDb();
-        const user = await User.findOne({ email: parsed.data.email.toLowerCase() });
-        if (!user) {
-          return null;
-        }
-        const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
-        if (!valid) {
-          return null;
-        }
-        return { id: user._id.toString(), name: user.name, email: user.email };
       },
     }),
   ],
