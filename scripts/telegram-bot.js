@@ -84,7 +84,8 @@ function runClaude(prompt) {
   if (isNewSession) delete process.env.CLAUDE_NEW_SESSION;
   const claudeArgs = ["--print", "--dangerously-skip-permissions"];
   if (!isNewSession) claudeArgs.push("--continue");
-  claudeArgs.push(prompt);
+  claudeArgs.push(`"${prompt.replace(/"/g, '\\"')}"`);
+
 
   const proc = spawn(
     "claude",
