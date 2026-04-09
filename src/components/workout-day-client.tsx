@@ -137,6 +137,46 @@ export function WorkoutDayClient({ dateParam }: { dateParam: string }) {
     setMessage(body.isDone ? "Great! Day completed and marked done." : "Set saved.");
   }
 
+  const isLoading = exercises.length === 0 && !message;
+
+  if (isLoading) {
+    return (
+      <section className="space-y-4 animate-pulse">
+        {/* Date + week line */}
+        <div className="h-4 w-32 rounded bg-zinc-200" />
+        <div className="h-3 w-24 rounded bg-zinc-200" />
+
+        {/* Exercise card skeletons */}
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="rounded-xl border border-zinc-200 bg-white p-4 space-y-3">
+            {/* Title + toggle */}
+            <div className="flex items-center justify-between">
+              <div className="h-5 w-44 rounded bg-zinc-200" />
+              <div className="h-6 w-11 rounded-full bg-zinc-200" />
+            </div>
+            {/* Meta line */}
+            <div className="h-3 w-56 rounded bg-zinc-200" />
+            {/* Video button */}
+            <div className="h-8 w-full rounded-lg bg-zinc-100" />
+            {/* Set forms */}
+            {[1, 2].map((j) => (
+              <div key={j} className="rounded-xl border border-zinc-200 bg-white p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="h-3 w-12 rounded bg-zinc-200" />
+                  <div className="h-3 w-10 rounded bg-zinc-200" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="h-9 rounded-lg bg-zinc-100" />
+                  <div className="h-9 rounded-lg bg-zinc-100" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </section>
+    );
+  }
+
   const rendered = exercises.map((exercise) => (
         <article
           key={exercise._id}
