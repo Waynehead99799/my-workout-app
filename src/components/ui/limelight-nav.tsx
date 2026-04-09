@@ -91,6 +91,13 @@ export const LimelightNav = ({
     if (items.length === 0) {
       return;
     }
+    // Don't move limelight to primary action (floating button) — it looks disconnected
+    if (items[currentIndex]?.isPrimaryAction) {
+      if (!isReady) {
+        setTimeout(() => setIsReady(true), 50);
+      }
+      return;
+    }
     const limelight = limelightRef.current;
     const activeItem = navItemRefs.current[currentIndex];
     if (limelight && activeItem) {
@@ -118,7 +125,7 @@ export const LimelightNav = ({
     <nav
       className={`relative inline-flex h-14 w-full items-center rounded-2xl bg-transparent px-1.5 text-foreground ${className}`}
     >
-      {items.map(({ id, icon, label, onClick }, index) => (
+      {items.map(({ id, icon, label, onClick, isPrimaryAction }, index) => (
         <button
           key={id}
           ref={(el) => {
@@ -129,7 +136,7 @@ export const LimelightNav = ({
           onClick={() => handleItemClick(index, onClick)}
           aria-label={label}
         >
-          {items[index]?.isPrimaryAction ? (
+          {isPrimaryAction ? (
             <span className="flex h-11 w-11 shrink-0 -translate-y-2 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/35">
               {cloneElement(icon, {
                 className: `h-7 w-7 shrink-0 opacity-100 ${icon.props.className ?? ""} ${iconClassName}`,

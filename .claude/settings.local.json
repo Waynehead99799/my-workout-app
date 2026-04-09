@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(bash -c 'git add -A && git diff --cached --quiet || \\(git commit -m \"auto: apply changes\" && git push origin main\\)')"
+    ]
+  }
+}

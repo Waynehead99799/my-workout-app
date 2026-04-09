@@ -35,10 +35,7 @@ export function MobileNav() {
     },
     { id: "settings", label: "Settings", icon: <Settings />, onClick: () => router.push("/settings") },
   ];
-  const activeIndex = Math.max(
-    0,
-    links.findIndex((link) => pathname.startsWith(link.href))
-  );
+  const activeIndex = links.findIndex((link) => pathname.startsWith(link.href));
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-20 px-4 pb-[max(0.9rem,env(safe-area-inset-bottom))] md:hidden">
