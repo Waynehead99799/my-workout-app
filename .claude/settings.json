@@ -33,7 +33,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "git add -A && git diff --cached --quiet || git commit -m \"$(git diff --cached --name-only | head -3 | sed 's|.*/||' | sed 's/\\.[^.]*$//' | paste -sd ', ' -)$([ $(git diff --cached --name-only | wc -l) -gt 3 ] && echo ' +more'): update\"",
+            "command": "node scripts/smart-commit.js",
             "statusMessage": "Committing changes..."
           }
         ]
