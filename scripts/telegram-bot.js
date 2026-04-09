@@ -28,6 +28,9 @@ if (fs.existsSync(envPath)) {
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID || process.env.TELEGRAM_ID;
 const PROJECT_DIR = path.join(__dirname, "..");
+const CLAUDE_BIN = process.platform === "win32"
+  ? path.join(process.env.USERPROFILE || "", ".local", "bin", "claude.exe")
+  : "claude";
 
 if (!TOKEN || !CHAT_ID) {
   console.error("Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID in .env");
