@@ -12,6 +12,7 @@ const WorkoutCycleSchema = new Schema(
 );
 
 WorkoutCycleSchema.index({ userId: 1, cycleIndex: 1 }, { unique: true });
+WorkoutCycleSchema.index({ userId: 1, isActive: 1 });
 
 export const WorkoutCycle =
   models.WorkoutCycle || model("WorkoutCycle", WorkoutCycleSchema);

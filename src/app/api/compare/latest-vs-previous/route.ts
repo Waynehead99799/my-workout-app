@@ -9,11 +9,11 @@ import { WorkoutSession } from "@/lib/models/WorkoutSession";
 type CycleStats = Record<string, { volume: number; maxWeight: number; sets: number }>;
 
 async function getCycleStats(userId: string, cycleId: string): Promise<CycleStats> {
-  const sessions = await WorkoutSession.find({ userId, cycleId }).select("_id dayKey weekNumber").lean();
+  const [sessions, logs] = await Promise.all([
+    WorkoutSession.find({ userId, cycleId }).select("_id dayKey weekNumber").lean(),
+    SetLog.find({ userId, cycleId }).select("sessionId exerciseId weight actualReps").lean(),
+  ]);
   const bySession = new Map(sessions.map((s) => [String(s._id), `${s.weekNumber}|${s.dayKey}`]));
-  const logs = await SetLog.find({ userId, cycleId })
-    .select("sessionId exerciseId weight actualReps")
-    .lean();
   const exerciseIds = Array.from(new Set(logs.map((l) => String(l.exerciseId))));
   const templates = await ProgramTemplate.find({ _id: { $in: exerciseIds } })
     .select("_id exerciseName")
@@ -56,8 +56,10 @@ export async function GET() {
   const latest = cycles[0];
   const previous = cycles[1];
 
-  const latestStats = await getCycleStats(session.user.id, String(latest._id));
-  const previousStats = await getCycleStats(session.user.id, String(previous._id));
+  const [latestStats, previousStats] = await Promise.all([
+    getCycleStats(session.user.id, String(latest._id)),
+    getCycleStats(session.user.id, String(previous._id)),
+  ]);
 
   const keys = Array.from(new Set([...Object.keys(latestStats), ...Object.keys(previousStats)]));
   const comparisons = keys.map((key) => {

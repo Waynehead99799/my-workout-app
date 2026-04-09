@@ -4,7 +4,7 @@ import { WorkoutCycle } from "@/lib/models/WorkoutCycle";
 import { WorkoutSession } from "@/lib/models/WorkoutSession";
 
 export async function getOrCreateActiveCycle(userId: string) {
-  let cycle = await WorkoutCycle.findOne({ userId, isActive: true });
+  let cycle = await WorkoutCycle.findOne({ userId, isActive: true }).lean();
   if (!cycle) {
     const latest = await WorkoutCycle.findOne({ userId }).sort({ cycleIndex: -1 }).lean();
     const nextIndex = (latest?.cycleIndex ?? 0) + 1;
@@ -19,9 +19,9 @@ export async function getOrCreateActiveCycle(userId: string) {
     } catch (error) {
       const maybeDup = error as { code?: number };
       if (maybeDup.code === 11000) {
-        cycle = await WorkoutCycle.findOne({ userId, isActive: true });
+        cycle = await WorkoutCycle.findOne({ userId, isActive: true }).lean();
         if (!cycle) {
-          cycle = await WorkoutCycle.findOne({ userId }).sort({ cycleIndex: -1 });
+          cycle = await WorkoutCycle.findOne({ userId }).sort({ cycleIndex: -1 }).lean();
         }
       } else {
         throw error;
@@ -85,25 +85,21 @@ export async function computeSessionDone(sessionId: string) {
     return false;
   }
 
-  const templates = await ProgramTemplate.find({
-    _id: { $in: session.plannedExerciseIds },
-  }).lean();
+  const [templates, counts] = await Promise.all([
+    ProgramTemplate.find({ _id: { $in: session.plannedExerciseIds } }).lean(),
+    SetLog.aggregate([
+      { $match: { sessionId: session._id, setType: "working" } },
+      { $group: { _id: "$exerciseId", count: { $sum: 1 } } },
+    ]),
+  ]);
 
-  for (const template of templates) {
-    const workingRequired = Number(template.workingSets ?? 0);
+  const countMap = new Map(counts.map((c: { _id: unknown; count: number }) => [String(c._id), c.count]));
 
-    const workings = await SetLog.countDocuments({
-      sessionId: session._id,
-      exerciseId: template._id,
-      setType: "working",
-    });
+  const isDone = templates.every((t) => {
+    const required = Number(t.workingSets ?? 0);
+    return (countMap.get(String(t._id)) ?? 0) >= required;
+  });
 
-    if (workings < workingRequired) {
-      await WorkoutSession.updateOne({ _id: sessionId }, { isDone: false });
-      return false;
-    }
-  }
-
-  await WorkoutSession.updateOne({ _id: sessionId }, { isDone: true });
-  return true;
+  await WorkoutSession.updateOne({ _id: sessionId }, { isDone });
+  return isDone;
 }

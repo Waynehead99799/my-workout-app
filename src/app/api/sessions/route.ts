@@ -39,16 +39,18 @@ export async function POST(req: Request) {
     });
 
     if (existingSession) {
-      const existingTemplates = await ProgramTemplate.find({
-        weekNumber: existingSession.weekNumber,
-        dayKey: existingSession.dayKey,
-      }).lean();
-      const existingLogs = await SetLog.find({
-        sessionId: existingSession._id,
-        setType: "working",
-      })
-        .select("exerciseId setType setNumber weight actualReps")
-        .lean();
+      const [existingTemplates, existingLogs] = await Promise.all([
+        ProgramTemplate.find({
+          weekNumber: existingSession.weekNumber,
+          dayKey: existingSession.dayKey,
+        }).lean(),
+        SetLog.find({
+          sessionId: existingSession._id,
+          setType: "working",
+        })
+          .select("exerciseId setType setNumber weight actualReps")
+          .lean(),
+      ]);
 
       const logs = existingLogs.map((log) => ({
         ...log,

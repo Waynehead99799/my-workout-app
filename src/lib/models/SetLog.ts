@@ -32,5 +32,7 @@ SetLogSchema.index(
   { sessionId: 1, exerciseId: 1, setType: 1, setNumber: 1 },
   { unique: true }
 );
+SetLogSchema.index({ userId: 1, cycleId: 1 });
+SetLogSchema.index({ sessionId: 1, setType: 1 });
 
 export const SetLog = models.SetLog || model("SetLog", SetLogSchema);
