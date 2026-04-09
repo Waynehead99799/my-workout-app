@@ -91,16 +91,19 @@ export const LimelightNav = ({
     if (items.length === 0) {
       return;
     }
-    // Don't move limelight to primary action (floating button) — it looks disconnected
+    const limelight = limelightRef.current;
+    if (!limelight) return;
+    // Hide limelight when primary action (floating button) is active
     if (items[currentIndex]?.isPrimaryAction) {
+      limelight.style.opacity = "0";
       if (!isReady) {
         setTimeout(() => setIsReady(true), 50);
       }
       return;
     }
-    const limelight = limelightRef.current;
+    limelight.style.opacity = "1";
     const activeItem = navItemRefs.current[currentIndex];
-    if (limelight && activeItem) {
+    if (activeItem) {
       const newLeft = activeItem.offsetLeft + activeItem.offsetWidth / 2 - limelight.offsetWidth / 2;
       limelight.style.left = `${newLeft}px`;
       if (!isReady) {
@@ -155,7 +158,7 @@ export const LimelightNav = ({
       <div
         ref={limelightRef}
         className={`absolute top-0 z-10 h-[4px] w-10 rounded-full bg-primary shadow-[0_40px_14px_var(--primary)] ${
-          isReady ? "transition-[left] duration-400 ease-in-out" : ""
+          isReady ? "transition-[left,opacity] duration-400 ease-in-out" : ""
         } ${limelightClassName}`}
         style={{ left: "-999px" }}
       >
