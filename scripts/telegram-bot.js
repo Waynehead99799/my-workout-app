@@ -175,6 +175,10 @@ async function getUpdates() {
         } catch {
           sendMessage("Could not get git status.");
         }
+      } else if (text === "/new") {
+        sendMessage("🆕 Starting fresh session. Next message will begin a new conversation.");
+        // Remove --continue by toggling a flag
+        process.env.CLAUDE_NEW_SESSION = "1";
       } else if (text === "/help") {
         sendMessage(
           `*Claude Bot Commands*\n\nSend any message → runs it as a Claude task\n/status → git status\n/stop → kill current task\n/help → this message`
