@@ -47,7 +47,7 @@ function getRpeCardClass(lastSetRpe?: string) {
     return "border-sky-200 bg-sky-50/35";
   }
 
-  return "border-zinc-200 bg-white";
+  return "border-border/20 bg-card/80";
 }
 
 export function WorkoutDayClient({ dateParam }: { dateParam: string }) {
@@ -143,31 +143,31 @@ export function WorkoutDayClient({ dateParam }: { dateParam: string }) {
     return (
       <section className="space-y-4 animate-pulse">
         {/* Date + week line */}
-        <div className="h-4 w-32 rounded bg-zinc-200" />
-        <div className="h-3 w-24 rounded bg-zinc-200" />
+        <div className="h-4 w-32 rounded bg-muted" />
+        <div className="h-3 w-24 rounded bg-muted" />
 
         {/* Exercise card skeletons */}
         {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-xl border border-zinc-200 bg-white p-4 space-y-3">
+          <div key={i} className="rounded-xl border border-border/20 bg-card p-4 space-y-3">
             {/* Title + toggle */}
             <div className="flex items-center justify-between">
-              <div className="h-5 w-44 rounded bg-zinc-200" />
-              <div className="h-6 w-11 rounded-full bg-zinc-200" />
+              <div className="h-5 w-44 rounded bg-muted" />
+              <div className="h-6 w-11 rounded-full bg-muted" />
             </div>
             {/* Meta line */}
-            <div className="h-3 w-56 rounded bg-zinc-200" />
+            <div className="h-3 w-56 rounded bg-muted" />
             {/* Video button */}
-            <div className="h-8 w-full rounded-lg bg-zinc-100" />
+            <div className="h-8 w-full rounded-lg bg-muted/50" />
             {/* Set forms */}
             {[1, 2].map((j) => (
-              <div key={j} className="rounded-xl border border-zinc-200 bg-white p-3 space-y-2">
+              <div key={j} className="rounded-xl border border-border/20 bg-card p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="h-3 w-12 rounded bg-zinc-200" />
-                  <div className="h-3 w-10 rounded bg-zinc-200" />
+                  <div className="h-3 w-12 rounded bg-muted" />
+                  <div className="h-3 w-10 rounded bg-muted" />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="h-9 rounded-lg bg-zinc-100" />
-                  <div className="h-9 rounded-lg bg-zinc-100" />
+                  <div className="h-9 rounded-lg bg-muted/50" />
+                  <div className="h-9 rounded-lg bg-muted/50" />
                 </div>
               </div>
             ))}
@@ -194,7 +194,7 @@ export function WorkoutDayClient({ dateParam }: { dateParam: string }) {
                   }))
                 }
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                  openAlternatives[exercise._id] ? "bg-zinc-900" : "bg-zinc-300"
+                  openAlternatives[exercise._id] ? "bg-primary" : "bg-muted"
                 }`}
                 aria-label={`Toggle alternatives for ${exercise.exerciseName}`}
                 aria-pressed={Boolean(openAlternatives[exercise._id])}
@@ -207,14 +207,14 @@ export function WorkoutDayClient({ dateParam }: { dateParam: string }) {
               </button>
             ) : null}
           </div>
-          <p className="mt-1 text-xs text-zinc-600">
+          <p className="mt-1 text-xs text-muted-foreground">
             {exercise.workingSets} working sets | {exercise.reps} reps | Last set RPE{" "}
             {exercise.lastSetRpe ?? "-"}
           </p>
           {exercise.intensityTechnique ? (
-            <p className="mt-1 text-xs text-zinc-600">Intensity: {exercise.intensityTechnique}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Intensity: {exercise.intensityTechnique}</p>
           ) : null}
-          {exercise.notes ? <p className="mt-1 text-xs text-zinc-600">{exercise.notes}</p> : null}
+          {exercise.notes ? <p className="mt-1 text-xs text-muted-foreground">{exercise.notes}</p> : null}
 
           {exercise.exerciseYoutubeId ? (
             <div className="mt-3">
@@ -247,8 +247,8 @@ export function WorkoutDayClient({ dateParam }: { dateParam: string }) {
               {openAlternatives[exercise._id] ? (
                 <div className="mt-2 space-y-2">
                   {exercise.substitutions.map((sub) => (
-                    <div key={sub.label} className="rounded-lg bg-zinc-50 p-2.5">
-                      <p className="text-xs font-medium text-zinc-700">Alternative: {sub.label}</p>
+                    <div key={sub.label} className="rounded-lg bg-muted/30 p-2.5">
+                      <p className="text-xs font-medium text-foreground/80">Alternative: {sub.label}</p>
                       {sub.youtubeId ? (
                         <iframe
                           className="mt-2 aspect-video w-full rounded-md"
@@ -282,13 +282,13 @@ export function WorkoutDayClient({ dateParam }: { dateParam: string }) {
 
   return (
     <section className="space-y-4">
-      <p className="text-sm text-zinc-600">Date: {date}</p>
+      <p className="text-sm text-muted-foreground">Date: {date}</p>
       {weekNumber ? (
-        <p className="text-xs font-medium text-zinc-600">
+        <p className="text-xs font-medium text-muted-foreground">
           Week {weekNumber} {dayKey ? `· ${dayKey}` : ""}
         </p>
       ) : null}
-      {message ? <p className="rounded-lg bg-zinc-100 p-2 text-sm">{message}</p> : null}
+      {message ? <p className="rounded-lg bg-muted/50 p-2 text-sm">{message}</p> : null}
       {rendered}
     </section>
   );
@@ -348,16 +348,16 @@ function SetForm({
   };
 
   return (
-    <div className="space-y-2 rounded-xl border border-zinc-200 bg-white p-3">
+    <div className="space-y-2 rounded-xl border border-border/20 bg-card p-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-zinc-700">{label}</p>
-        <span className="text-[11px] text-zinc-500">
+        <p className="text-xs font-semibold text-foreground/80">{label}</p>
+        <span className="text-[11px] text-muted-foreground">
           {saving ? "Saving..." : saved || `${weight}|${reps}` === lastSavedKey ? "Saved" : "Editing"}
         </span>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <input
-          className="rounded-lg border border-zinc-200 px-2.5 py-2 text-xs outline-none focus:ring-2 focus:ring-zinc-200"
+          className="rounded-lg border border-border/20 bg-background px-2.5 py-2 text-xs text-foreground outline-none focus:ring-2 focus:ring-primary/30"
           name="weight"
           required
           inputMode="decimal"
@@ -367,7 +367,7 @@ function SetForm({
           onBlur={handleBlur}
         />
         <input
-          className="rounded-lg border border-zinc-200 px-2.5 py-2 text-xs outline-none focus:ring-2 focus:ring-zinc-200"
+          className="rounded-lg border border-border/20 bg-background px-2.5 py-2 text-xs text-foreground outline-none focus:ring-2 focus:ring-primary/30"
           name="reps"
           inputMode="numeric"
           placeholder="Reps (optional)"

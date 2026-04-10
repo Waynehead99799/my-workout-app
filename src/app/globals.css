@@ -262,7 +262,7 @@ body {
   min-width: 42px;
   border-radius: 12px;
   font-weight: 600;
-  color: #111827;
+  color: var(--foreground);
 }
 
 .ios-calendar .react-calendar__month-view__weekdays {
@@ -296,7 +296,7 @@ body {
 
 .ios-day-default {
   background: transparent;
-  color: #111827;
+  color: var(--foreground);
 }
 
 .ios-day-done {
@@ -316,12 +316,35 @@ body {
 }
 
 .react-calendar__tile--active {
-  background: #111827 !important;
-  color: #fff !important;
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
   border-radius: 50% !important;
 }
 
 .ios-day-done.react-calendar__tile--active {
   background: #166534 !important;
   color: #fff !important;
+}
+
+/* Dark mode overrides for calendar */
+.dark .ios-calendar .react-calendar__month-view__weekdays__weekday {
+  color: #9ca3af;
+}
+
+.dark .ios-day-done {
+  background: rgba(34, 197, 94, 0.15) !important;
+  border-color: rgba(34, 197, 94, 0.3) !important;
+  color: #4ade80;
+}
+
+.dark .glass-nav {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(
+    180deg,
+    rgba(30, 30, 40, 0.85) 0%,
+    rgba(20, 20, 30, 0.9) 100%
+  );
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
