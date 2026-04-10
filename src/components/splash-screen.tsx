@@ -2,46 +2,58 @@
 
 import { useEffect, useState } from "react";
 
+function isPwa(): boolean {
+  if (typeof window === "undefined") return false;
+  // iOS standalone
+  if ("standalone" in navigator && (navigator as { standalone?: boolean }).standalone) return true;
+  // Android / desktop PWA
+  if (window.matchMedia("(display-mode: standalone)").matches) return true;
+  if (window.matchMedia("(display-mode: fullscreen)").matches) return true;
+  // Fallback: check if loaded without browser UI via referrer
+  if (document.referrer.includes("android-app://")) return true;
+  return false;
+}
+
 export function SplashScreen() {
-  const [visible, setVisible] = useState(true);
-  const [animateOut, setAnimateOut] = useState(false);
+  const [state, setState] = useState<"checking" | "show" | "exit" | "done">("checking");
 
   useEffect(() => {
-    // Only show splash in standalone PWA mode
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (navigator as unknown as { standalone?: boolean }).standalone === true;
-
-    if (!isStandalone) {
-      setVisible(false);
+    if (!isPwa()) {
+      setState("done");
       return;
     }
 
-    // Start exit animation after logo animation completes
-    const timer = setTimeout(() => setAnimateOut(true), 1800);
-    // Remove from DOM after fade out
-    const remove = setTimeout(() => setVisible(false), 2400);
+    // Check if already shown this session (avoid re-showing on navigation)
+    if (sessionStorage.getItem("splash-shown")) {
+      setState("done");
+      return;
+    }
+    sessionStorage.setItem("splash-shown", "1");
+
+    setState("show");
+    const timer = setTimeout(() => setState("exit"), 1800);
+    const remove = setTimeout(() => setState("done"), 2400);
     return () => {
       clearTimeout(timer);
       clearTimeout(remove);
     };
   }, []);
 
-  if (!visible) return null;
+  if (state === "checking" || state === "done") return null;
 
   return (
     <div
       className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#111827] transition-opacity duration-500 ${
-        animateOut ? "opacity-0" : "opacity-100"
+        state === "exit" ? "opacity-0" : "opacity-100"
       }`}
     >
       {/* Logo */}
       <div
         className={`flex flex-col items-center ${
-          animateOut ? "scale-110" : ""
+          state === "exit" ? "scale-110" : ""
         }`}
         style={{
-          animation: animateOut
+          animation: state === "exit"
             ? "splash-zoom 500ms ease-out forwards"
             : "splash-in 800ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
         }}
