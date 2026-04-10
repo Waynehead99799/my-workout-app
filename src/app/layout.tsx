@@ -50,6 +50,13 @@ export default function RootLayout({
       lang="en"
       className={`${dmSans.variable} ${spaceMono.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=navigator.standalone||(window.matchMedia&&window.matchMedia("(display-mode:standalone)").matches);if(s)document.documentElement.style.background="#111827"}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body className="min-h-full bg-zinc-50 text-zinc-900">
         <AppSessionProvider>
           <SplashScreen />
