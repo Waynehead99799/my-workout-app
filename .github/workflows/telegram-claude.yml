@@ -1,0 +1,94 @@
+name: Telegram Claude Bot
+
+on:
+  repository_dispatch:
+    types: [telegram-task]
+
+jobs:
+  run-claude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: claude
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Send "starting" to Telegram
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=🚀 Starting task on GitHub Actions...&parse_mode=Markdown"
+
+      - name: Run Claude
+        id: claude
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          PROMPT='${{ github.event.client_payload.prompt }}'
+          OUTPUT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1) || true
+          # Save output to file (avoid shell escaping issues)
+          echo "$OUTPUT" > /tmp/claude-output.txt
+          # Truncate for Telegram (4096 char limit)
+          head -c 3800 /tmp/claude-output.txt > /tmp/claude-short.txt
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "Claude Bot"
+          git config user.email "claude-bot@github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            # Build commit message from changed files
+            FILES=$(git diff --cached --name-only | head -3 | xargs -I{} basename {} | sed 's/\.[^.]*$//' | paste -sd ', ' -)
+            COUNT=$(git diff --cached --name-only | wc -l)
+            EXTRA=""
+            if [ "$COUNT" -gt 3 ]; then
+              EXTRA=" +$((COUNT - 3)) more"
+            fi
+            git commit -m "${FILES}${EXTRA}: update"
+            git push origin claude
+            echo "PUSHED=true" >> $GITHUB_ENV
+          else
+            echo "PUSHED=false" >> $GITHUB_ENV
+          fi
+
+      - name: Send result to Telegram
+        if: always()
+        run: |
+          if [ -f /tmp/claude-short.txt ]; then
+            OUTPUT=$(cat /tmp/claude-short.txt)
+          else
+            OUTPUT="No output captured."
+          fi
+
+          if [ "$PUSHED" = "true" ]; then
+            PUSH_MSG="📦 Changes pushed to claude branch."
+          else
+            PUSH_MSG="No file changes."
+          fi
+
+          # URL-encode the message
+          MSG=$(python3 -c "import urllib.parse; print(urllib.parse.quote('✅ Task complete!\n\n${PUSH_MSG}\n\n📝 Output:\n' + open('/tmp/claude-short.txt').read()[:3500] if __import__('os').path.exists('/tmp/claude-short.txt') else 'No output'))")
+
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}&parse_mode=Markdown" || \
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=✅ Task complete. ${PUSH_MSG}"
+
+      - name: Send error to Telegram
+        if: failure()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=❌ Task failed. Check GitHub Actions logs."
