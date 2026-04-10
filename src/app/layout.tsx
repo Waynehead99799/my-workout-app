@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppSessionProvider } from "@/components/session-provider";
 import { MobileNav } from "@/components/mobile-nav";
 import { PwaRegister } from "@/components/pwa-register";
+import { SplashScreen } from "@/components/splash-screen";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -51,6 +52,7 @@ export default function RootLayout({
     >
       <body className="min-h-full bg-zinc-50 text-zinc-900">
         <AppSessionProvider>
+          <SplashScreen />
           <PwaRegister />
           <div className="mx-auto min-h-screen w-full max-w-4xl pb-20 md:pb-6">{children}</div>
           <MobileNav />

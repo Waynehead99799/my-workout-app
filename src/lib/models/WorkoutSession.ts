@@ -19,6 +19,8 @@ const WorkoutSessionSchema = new Schema(
 );
 
 WorkoutSessionSchema.index({ userId: 1, cycleId: 1, sessionDate: 1 }, { unique: true });
+WorkoutSessionSchema.index({ userId: 1, createdAt: -1 });
+WorkoutSessionSchema.index({ sessionDate: 1, isDone: 1 });
 
 export const WorkoutSession =
   models.WorkoutSession || model("WorkoutSession", WorkoutSessionSchema);

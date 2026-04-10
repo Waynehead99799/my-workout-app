@@ -34,5 +34,7 @@ SetLogSchema.index(
 );
 SetLogSchema.index({ userId: 1, cycleId: 1 });
 SetLogSchema.index({ sessionId: 1, setType: 1 });
+SetLogSchema.index({ completedAt: -1 });
+SetLogSchema.index({ userId: 1, completedAt: -1 });
 
 export const SetLog = models.SetLog || model("SetLog", SetLogSchema);
