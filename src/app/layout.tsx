@@ -5,6 +5,7 @@ import { AppSessionProvider } from "@/components/session-provider";
 import { MobileNav } from "@/components/mobile-nav";
 import { PwaRegister } from "@/components/pwa-register";
 import { SplashScreen } from "@/components/splash-screen";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -53,17 +54,19 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var s=navigator.standalone||(window.matchMedia&&window.matchMedia("(display-mode:standalone)").matches);if(s)document.documentElement.style.background="#111827"}catch(e){}})()`,
+            __html: `(function(){try{var t=localStorage.getItem("theme")||"system";var d=t==="dark"||(t==="system"&&window.matchMedia("(prefers-color-scheme:dark)").matches);if(d)document.documentElement.classList.add("dark");var s=navigator.standalone||(window.matchMedia&&window.matchMedia("(display-mode:standalone)").matches);if(s)document.documentElement.style.background=d?"#000000":"#111827"}catch(e){}})()`,
           }}
         />
       </head>
-      <body className="min-h-full bg-zinc-50 text-zinc-900">
-        <AppSessionProvider>
-          <SplashScreen />
-          <PwaRegister />
-          <div className="mx-auto min-h-screen w-full max-w-4xl pb-20 md:pb-6">{children}</div>
-          <MobileNav />
-        </AppSessionProvider>
+      <body className="min-h-full bg-background text-foreground">
+        <ThemeProvider>
+          <AppSessionProvider>
+            <SplashScreen />
+            <PwaRegister />
+            <div className="mx-auto min-h-screen w-full max-w-4xl pb-20 md:pb-6">{children}</div>
+            <MobileNav />
+          </AppSessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

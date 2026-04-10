@@ -19,16 +19,16 @@ export function RestartCycle() {
   }
 
   return (
-    <div className="rounded-xl border bg-white p-4">
+    <div className="ios-card p-4">
       <h2 className="font-semibold">Restart Workout Cycle</h2>
-      <p className="mt-1 text-sm text-zinc-600">
+      <p className="mt-1 text-sm text-muted-foreground">
         This starts a new cycle and keeps old cycle data for comparison.
       </p>
       <button
         type="button"
         onClick={restart}
         disabled={loading}
-        className="mt-3 rounded-lg bg-black px-4 py-2 text-sm text-white disabled:opacity-60"
+        className="ios-btn ios-btn-primary mt-3 px-4 py-2 text-sm disabled:opacity-60"
       >
         {loading ? "Restarting..." : "Start New Cycle"}
       </button>

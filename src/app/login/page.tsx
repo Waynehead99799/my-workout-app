@@ -45,14 +45,14 @@ export default function LoginPage() {
     <main className="mx-auto flex min-h-screen w-full max-w-md items-center p-4">
       <section className="ios-card w-full p-5 sm:p-6">
         <h1 className="text-2xl font-semibold tracking-tight">Workout Tracker</h1>
-        <p className="mt-1 text-sm text-zinc-600">
+        <p className="mt-1 text-sm text-muted-foreground">
           {mode === "login" ? "Sign in to continue." : "Create your account."}
         </p>
 
         <form onSubmit={onSubmit} className="mt-4 space-y-3">
           {mode === "signup" ? (
             <input
-              className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-zinc-200"
+              className="w-full rounded-xl border border-border/20 bg-card px-3 py-2.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-border/30"
               placeholder="Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -60,7 +60,7 @@ export default function LoginPage() {
             />
           ) : null}
           <input
-            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-zinc-200"
+            className="w-full rounded-xl border border-border/20 bg-card px-3 py-2.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-border/30"
             type="email"
             placeholder="Email"
             value={email}
@@ -68,7 +68,7 @@ export default function LoginPage() {
             required
           />
           <input
-            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-zinc-200"
+            className="w-full rounded-xl border border-border/20 bg-card px-3 py-2.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-border/30"
             type="password"
             placeholder="Password"
             value={password}
@@ -86,7 +86,7 @@ export default function LoginPage() {
 
         <button
           type="button"
-          className="mt-3 text-sm text-zinc-700 underline"
+          className="mt-3 text-sm text-muted-foreground underline"
           onClick={() => setMode((m) => (m === "login" ? "signup" : "login"))}
         >
           {mode === "login" ? "Need an account? Sign up" : "Already registered? Login"}
