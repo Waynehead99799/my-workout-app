@@ -37,14 +37,7 @@ export function CalendarClient() {
               ? "ios-day-done"
               : "ios-day-default";
           }}
-          tileContent={({ date }) => {
-            const key = dayjs(date).format("YYYY-MM-DD");
-            if (!doneMap.get(key)) {
-              return null;
-            }
-
-            return <span className="ios-day-check">✓</span>;
-          }}
+          tileContent={() => null}
         />
       </div>
 
