@@ -9,7 +9,8 @@
       "Bash(node -e ':*)",
       "Bash(pm2 restart:*)",
       "Bash(pm2 kill:*)",
-      "Bash(pm2 start:*)"
+      "Bash(pm2 start:*)",
+      "Bash(ping -n 2 api.telegram.org)"
     ]
   }
 }
