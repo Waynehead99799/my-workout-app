@@ -10,16 +10,21 @@ type SessionDay = { sessionDate: string; isDone: boolean };
 export function CalendarClient() {
   const [value, setValue] = useState<Date>(new Date());
   const [sessions, setSessions] = useState<SessionDay[]>([]);
+  const [cycleStartDate, setCycleStartDate] = useState<string | null>(null);
 
   const monthKey = dayjs(value).format("YYYY-MM");
 
   useEffect(() => {
     fetch(`/api/sessions?month=${monthKey}`)
       .then((r) => r.json())
-      .then((data) => setSessions(data.sessions ?? []));
+      .then((data) => {
+        setSessions(data.sessions ?? []);
+        if (data.cycleStartDate) setCycleStartDate(data.cycleStartDate);
+      });
   }, [monthKey]);
 
   const doneMap = useMemo(() => new Map(sessions.map((s) => [s.sessionDate, s.isDone])), [sessions]);
+  const today = dayjs().format("YYYY-MM-DD");
   const selectedDate = dayjs(value).format("YYYY-MM-DD");
 
   return (
@@ -32,10 +37,11 @@ export function CalendarClient() {
           formatShortWeekday={(_, date) => dayjs(date).format("dd")}
           tileClassName={({ date }) => {
             const key = dayjs(date).format("YYYY-MM-DD");
-            const isDone = doneMap.get(key);
-            return isDone
-              ? "ios-day-done"
-              : "ios-day-default";
+            if (doneMap.has(key)) {
+              return doneMap.get(key) ? "ios-day-done" : "ios-day-inprogress";
+            }
+            const isPast = key < today && cycleStartDate && key >= cycleStartDate;
+            return isPast ? "ios-day-off" : "ios-day-default";
           }}
           tileContent={() => null}
         />
@@ -47,9 +53,11 @@ export function CalendarClient() {
           Status:{" "}
           {doneMap.has(selectedDate)
             ? doneMap.get(selectedDate)
-              ? "Done"
-              : "In progress"
-            : "No logs yet"}
+              ? "✅ Done"
+              : "🏋️ In progress"
+            : selectedDate < today && cycleStartDate && selectedDate >= cycleStartDate
+              ? "😴 Off / Break day"
+              : "No logs yet"}
         </p>
         <Link
           href={`/workout/${selectedDate}`}

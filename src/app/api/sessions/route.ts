@@ -63,6 +63,7 @@ export async function POST(req: Request) {
     const completedWorkoutsCount = await WorkoutSession.countDocuments({
       userId: session.user.id,
       cycleId: cycle._id,
+      isDone: true,
     });
 
     const templateDay = await resolveTemplateDayByProgress(completedWorkoutsCount);
@@ -145,12 +146,18 @@ export async function GET(req: Request) {
   await connectDb();
   const start = `${month}-01`;
   const end = dayjs(start).endOf("month").format("YYYY-MM-DD");
-  const sessions = await WorkoutSession.find({
-    userId: session.user.id,
-    sessionDate: { $gte: start, $lte: end },
-  })
-    .select("sessionDate isDone")
-    .lean();
+  const [sessions, cycle] = await Promise.all([
+    WorkoutSession.find({
+      userId: session.user.id,
+      sessionDate: { $gte: start, $lte: end },
+    })
+      .select("sessionDate isDone")
+      .lean(),
+    getOrCreateActiveCycle(session.user.id),
+  ]);
 
-  return NextResponse.json({ sessions });
+  return NextResponse.json({
+    sessions,
+    cycleStartDate: dayjs(cycle.startedAt).format("YYYY-MM-DD"),
+  });
 }
